@@ -1,14 +1,23 @@
 -- premake5.lua
-workspace "New Project"
+workspace "ShaderScape"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "App"
+   startproject "ShaderScape"
 
    -- Workspace-wide build options for MSVC
    filter "system:windows"
       buildoptions { "/EHsc", "/Zc:preprocessor", "/Zc:__cplusplus" }
 
 OutputDir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
+LibDir = "../Libs"
+
+group "Dependencies"
+   include "Vendor/ImGui"
+   include "Vendor/ImPlot"
+   include "Vendor/Glad"
+   include "Vendor/GLFW"
+group ""
+
 
 group "Core"
 	include "Core/Build-Core.lua"

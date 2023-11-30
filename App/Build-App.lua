@@ -1,4 +1,4 @@
-project "App"
+project "ShaderScape"
    kind "ConsoleApp"
    language "C++"
    cppdialect "C++20"
@@ -10,9 +10,18 @@ project "App"
    includedirs
    {
       "Source",
+      "../Shaders",
 
 	  -- Include Core
-	  "../Core/Source"
+	  "../Core/Source",
+      
+      "../Vendor/Glad/include",
+      "../Vendor/GLFW/include",
+      "../Vendor/glm",
+
+      "../Vendor/ImGui",
+      "../Vendor/ImGui/backends",
+      "../Vendor/ImPlot"
    }
 
    links

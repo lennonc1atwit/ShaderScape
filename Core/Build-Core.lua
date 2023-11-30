@@ -9,7 +9,23 @@ project "Core"
 
    includedirs
    {
-      "Source"
+      "Source",
+
+      "../Vendor/Glad/include",
+      "../Vendor/GLFW/include",
+      "../Vendor/glm",
+
+      "../Vendor/ImGui",
+      "../Vendor/ImGui/backends",
+      "../Vendor/ImPlot"
+   }
+
+   links
+   {
+    "Glad",
+    "GLFW",
+    "ImGui",
+    "ImPlot"
    }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
