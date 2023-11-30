@@ -8,12 +8,13 @@
 - Profile shader preformance
 - Built in uniforms
 
-[Strings](Resources/strings.png)
-[Bulb](Resources/bulb.png)
+![Strings](Resources/strings.png)
+![Bulb](Resources/bulb.png)
 
 ## Future
 - GLSL text editor
 - Buffers and channels
+- Multi file shaders
 
 ## Dependancies
 [Premake](https://github.com/premake/premake-core)
