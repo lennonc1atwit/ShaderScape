@@ -9,7 +9,6 @@ GLuint Scape::Shader::CreateShader(const std::string& shaderSource, GLenum shade
     static const std::string _openGlVersion = "#version 430 core\n";
     static const std::string _builtInUniforms = "precision highp float;\nuniform float iTime;\nuniform vec3 iResolution;\n";
     std::string fullSource = _openGlVersion + _builtInUniforms + shaderSource;
-
     const char* rawSource = fullSource.c_str();
 
     // Create shader object
@@ -151,9 +150,6 @@ void Scape::Shader::SetUniformBuffer(std::string uniformName, const void* data)
     SendUniform(uniformName);
 }
 
-
-
-
 GLenum Scape::Shader::GetUniformType(std::string uniformName)
 {
 	if (_activeUniforms.find(uniformName) != _activeUniforms.end())
@@ -175,53 +171,38 @@ size_t Scape::Shader::GetUniformSize(std::string uniformName)
 	return 0;
 }
 
-void Scape::Shader::RetreiveActiveUniforms(bool preserveData)
+void Scape::Shader::RetreiveActiveUniforms()
 {
-    GLint count;
+    GLint count, size;
+    GLenum type; 
+    const GLsizei bufSize = 24; 
+    GLchar name[bufSize];
+    GLsizei length;
 
-    GLint size; // size of the variable
-    GLenum type; // type of the variable (float, vec3 or mat4, etc)
-
-    const GLsizei bufSize = 16; // maximum name length
-    GLchar name[bufSize]; // variable name in GLSL
-    GLsizei length; // name length
-
-    if (!preserveData)
-        _activeUniforms.clear();
-
-    std::set<std::string> obsoleteUniforms = std::set<std::string>();
-    for (auto const& entry : _activeUniforms)
-        obsoleteUniforms.insert(entry.first);
+    std::set<std::string> newNames = std::set<std::string>();
 
     glGetProgramiv(_programId, GL_ACTIVE_UNIFORMS, &count);
     for (int i = 0; i < count; i++)
     {
         glGetActiveUniform(_programId, i, bufSize, &length, &size, &type, name);
+
         // Check if this uniform exists and is still the same
-        if (preserveData && _activeUniforms.find(name) != _activeUniforms.end())
+        if (_activeUniforms.find(name) != _activeUniforms.end() && _activeUniforms.at(name)->GetType() == type)
         {
-            auto unif = _activeUniforms[name];
-            if (unif->GetType() == type && unif->GetBufferSize() == size) {
-                // If its the same update its location incase it changed
-                unif->UpdateLocation();
-                continue;
-            }
+            _activeUniforms.at(name)->UpdateLocation(); // In case new uniforms moved it
+            SendUniform(name);
         }
-
-        // Free old buffer if it previously existed and 
-        if (_activeUniforms.find(name) != _activeUniforms.end()) {
-            free(_activeUniforms[name]->GetBuffer<void*>());
+        else // Create populate and grab new uniform value from its shader
+        {
+            _activeUniforms[name] = std::make_shared<Uniform>(name, type, _programId);
+            RetreiveUniform(name);
         }
-
-        // Create and populate new uniform
-        _activeUniforms[name] = std::make_shared<Uniform>(name, type, _programId);
-
-        RetreiveUniform(name);
-
-        obsoleteUniforms.erase(name);
+        
+        newNames.insert(name);
     }
 
-    for (std::string oldName : obsoleteUniforms) {
-        _activeUniforms.erase(oldName);
-    }
+    // Remove old uniforms
+    std::erase_if(_activeUniforms, [newNames](std::pair<std::string, std::shared_ptr<Uniform>> entry) {
+        return !newNames.contains(entry.first);
+    });
 }

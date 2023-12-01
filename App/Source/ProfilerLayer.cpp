@@ -36,10 +36,7 @@ namespace Scape {
 
 	void ProfilerLayer::OnFixedUpdate(double fixedTimeStep)
 	{
-        double sum = 0;
-        for (int i = 0; i < CAPTURE_WINDOW_SIZE; i++)
-            sum += _frameTimeData[i];
-        _averageFrameTime = sum/(double)CAPTURE_WINDOW_SIZE;
+        _averageFrameTime = std::accumulate( &_frameTimeData[0], &_frameTimeData[CAPTURE_WINDOW_SIZE-1] , 0.0) / (double)CAPTURE_WINDOW_SIZE;
 	}
 
 	void ProfilerLayer::OnImGuiRender()

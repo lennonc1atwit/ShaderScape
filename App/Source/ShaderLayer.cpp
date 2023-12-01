@@ -99,13 +99,10 @@ namespace Scape {
         auto activeUniforms = _shader->GetActiveUniforms();
 
         // Erase old entries
-        for (auto curEntry = _uniformData.begin(), last = _uniformData.end(); curEntry != last;)
-        {
-            if (activeUniforms.find(curEntry->first) == activeUniforms.end() || curEntry->second->Type != activeUniforms[curEntry->first]->GetType())
-                curEntry = _uniformData.erase(curEntry);
-            else
-                ++curEntry;
-        }
+        std::erase_if(_uniformData, [activeUniforms](std::pair<std::string, std::shared_ptr<UniformUiData>> entry) {
+            std::string name = entry.first;
+            return activeUniforms.find(name) == activeUniforms.end() || entry.second->Type != activeUniforms.at(name)->GetType();
+        });
 
         // Add new ones
         for (auto const& entry : activeUniforms)

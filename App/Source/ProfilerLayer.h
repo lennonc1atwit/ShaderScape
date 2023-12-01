@@ -1,10 +1,9 @@
 #pragma once
 #include "Layer.h"
-#include <array>
 #include <bit>
 #include <imgui.h>
 #include <implot.h>
-
+#include <numeric>
 namespace Scape {
 	class ProfilerLayer : public Layer
 	{

@@ -4,6 +4,7 @@ uniform int MAX_ITER = 80;
 uniform float THRESHOLD = 16;
 uniform float ZOOM = 1;
 uniform vec2 OFFSET = vec2(0,0);
+uniform int Color = 1;
 
 struct palette {
     vec3 c0, c1, c2, c3, c4;
@@ -96,6 +97,11 @@ float bship(vec2 uv) {
 layout(location = 0) out vec4 fragColor;
 void main() {
     palette pal = palette_red_accented();
+
+    if(Color == 1)
+    {
+        pal = palette_blue();
+    }
     
     vec3 col = vec3(0);
 
