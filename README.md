@@ -1,5 +1,5 @@
 # Shader Scape
-Shader Scape is a shader toy like program that lets you live edit glsl shaders. Designed with ease of exploration in mind, uniforms are displayed as widgets for real time editing of colors and constants vectors and matrices and shaders are reloaded when the file is saved to disk.
+Shader Scape is a shader toy like program that lets you live edit glsl shaders. Designed with ease of exploration in mind, uniforms are displayed as widgets for real time editing of colors, constants, vectors and, matrices shaders are also reloaded when the file the saved to disk.
 
 Shader files live in the `Shaders/` directory and currently only fragment shaders are supported. 
 
