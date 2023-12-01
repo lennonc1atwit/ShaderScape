@@ -33,7 +33,7 @@ Quad::Quad(glm::vec2 size)
         1, 2, 3
     };
 
-    _shaderProgram = std::make_shared<SS::Shader>();
+    _shaderProgram = std::make_shared<Scape::Shader>();
 
     _vao = std::make_unique<VertexArrayObject>();
     _vbo = std::make_unique<VertexBufferObject>();

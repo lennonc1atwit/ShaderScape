@@ -3,12 +3,15 @@ namespace Scape {
     void ShaderLayer::OnAttach()
     {
         _quad = std::make_unique<Quad>(glm::vec2(1200, 600));
-        std::function<void()> callback = std::bind(&ShaderLayer::OnShaderLink, this);
-        _quad->GetShaderProgram()->AddOnLink(callback);
+        _shader = _quad->GetShaderProgram();
+
+        // Bind member func as callback
+        _shader->AddOnLink(std::bind(&ShaderLayer::OnShaderLink, this));
     }
 
     void ShaderLayer::OnDetach()
     {
+
     }
 
     void ShaderLayer::OnUpdate(double time, double timeStep)
@@ -19,42 +22,81 @@ namespace Scape {
 
     void ShaderLayer::OnFixedUpdate(double fixedTimeStep)
     {
+        // Hot reload doesn't need to check every frame 
+        if (IsShaderLoaded() && _lastSaveTime < GetLastWriteTime())
+            LoadShader();
     }
 
     void ShaderLayer::OnImGuiRender()
     {
-        ImGui::Begin("Settings");
+        if (ImGui::Begin("Settings")) 
+        {
+            ShowBuilder();
 
-        ShowBuilder();
-
-        if (_quad->GetShaderProgram()->GetUniformCount() > 0)
-            ShowUniforms();
-
+            if (IsShaderLoaded())
+                ShowUniforms();
+        }
         ImGui::End();
 
-        if (!ImGui::Begin("Shader") || !_quad->WindowedRender)
+        if (ImGui::Begin("Shader"))
         {
-            ImGui::End();
-            return;
+            ImVec2 contentSize = ImGui::GetContentRegionAvail();
+            ImGui::Image(reinterpret_cast<ImTextureID>(_quad->GetTextureId()), contentSize, ImVec2(0, 1), ImVec2(1, 0));
+
+            if (contentSize.x != _quad->GetSize().x || contentSize.y != _quad->GetSize().y)
+                _quad->SetResolution(contentSize.x, contentSize.y);
         }
-
-        ImVec2 contentSize = ImGui::GetContentRegionAvail();
-        ImGui::Image(reinterpret_cast<ImTextureID>(_quad->GetTextureId()), contentSize, ImVec2(0, 1), ImVec2(1, 0));
-
-        if (contentSize.x != _quad->GetSize().x || contentSize.y != _quad->GetSize().y)
-            _quad->SetResolution(contentSize.x, contentSize.y);
-
-
         ImGui::End();
     }
 
     void ShaderLayer::OnEvent()
     {
+
+    }
+
+    void ShaderLayer::LoadShader(std::string fileName)
+    {
+        _selectedShaderFilePath = Scape::Shader::SHADER_DIR + (!fileName.empty() ? fileName : _selectedShaderFileName);
+
+        std::ifstream shaderFile(_selectedShaderFilePath);
+        if (shaderFile.fail())
+        {
+            Logger::LogMessageConsole(Logger::Severity::Fail, __FILE__, __LINE__,
+                "Something went wrong when opening " + _selectedShaderFilePath + "The file may not exist or is currently inaccessible.\n");
+            return;
+        }
+        // Read file
+        std::string source = std::string(std::istreambuf_iterator<char>(shaderFile), (std::istreambuf_iterator<char>()));
+        shaderFile.close();
+
+        _shader->DeleteShader(_curShader);
+        _curShader = _shader->CreateShader(source, GL_FRAGMENT_SHADER);
+        _shader->AttachShader(_curShader);
+        _shader->Link();
+
+        // If everything went okay update last write time 
+        _lastSaveTime = GetLastWriteTime();
+    }
+
+    void ShaderLayer::UnLoadShader()
+    {
+        _selectedShaderFileName = "None";
+
+        _shader->DetachShader(_curShader);
+        _shader->DeleteShader(_curShader);
+        _shader->Link();
+
+        _curShader = 0;
+    }
+
+    double ShaderLayer::GetLastWriteTime()
+    {
+        return std::filesystem::last_write_time(_selectedShaderFilePath).time_since_epoch().count();
     }
 
     void ShaderLayer::OnShaderLink()
     {
-        auto activeUniforms = _quad->GetShaderProgram()->GetActiveUniforms();
+        auto activeUniforms = _shader->GetActiveUniforms();
 
         // Erase old entries
         for (auto curEntry = _uniformData.begin(), last = _uniformData.end(); curEntry != last;)
@@ -84,14 +126,14 @@ namespace Scape {
     static std::vector<std::string> FetchAvailableShaders()
     {
          std::vector fragmentShaderFileNames = std::vector<std::string>();
-        for (const auto& file : std::filesystem::directory_iterator(SS::Shader::SHADER_DIR))
+        for (const auto& file : std::filesystem::directory_iterator(Scape::Shader::SHADER_DIR))
         {
             // Extract file name and extension
             std::string filename = file.path().filename().string();
             std::string ext = file.path().extension().string();
 
             // Make its a fragment shader extension
-            if (SS::Shader::SUPPORTED_EXTENSIONS.count(ext) == 0)
+            if (Scape::Shader::SUPPORTED_EXTENSIONS.count(ext) == 0)
                 continue;
 
             fragmentShaderFileNames.push_back(filename);
@@ -102,8 +144,6 @@ namespace Scape {
 
     void ShaderLayer::ShowBuilder()
     {
-
-
         // Notice Text
         //ImGui::Text("This Program only supports fragment shaders.\nSupported File extensions: .f, .frag, .fragment");
         ImGui::Dummy(ImVec2(25, 25));
@@ -114,39 +154,23 @@ namespace Scape {
         if (ImGui::BeginCombo("Source File", _selectedShaderFileName.c_str()))
         {
             // Case for deselecting shader
-            bool none_selected = (_selectedShaderFileName == "None");
+            bool none_selected = !IsShaderLoaded();
             if (ImGui::Selectable("None", none_selected) && !none_selected)
-            {
-                _selectedShaderFileName = "None";
-            }
+                UnLoadShader();
+            
             if (none_selected)
                 ImGui::SetItemDefaultFocus();
 
             // Selecting shader
-            for (int n = 0; n < shaderFileNames.size(); n++)
+            for (std::string fileName : shaderFileNames)
             {
-                bool is_selected = (_selectedShaderFileName == shaderFileNames[n]);
-                if (ImGui::Selectable(shaderFileNames[n].c_str(), is_selected))
+                bool is_selected = (_selectedShaderFileName == fileName);
+                if (ImGui::Selectable(fileName.c_str(), is_selected))
                 {
-                    _selectedShaderFileName = shaderFileNames[n];
-                    std::string filePath = SS::Shader::SHADER_DIR + _selectedShaderFileName;
-                    std::ifstream shaderFile(filePath);
-                    if (shaderFile.fail())
-                    {
-                        Logger::LogMessageConsole(Logger::Severity::Fail, __FILE__, __LINE__,
-                            "Something went wrong when opening " + filePath + "The file may not exist or is currently inaccessible.\n");
-                        break;
-                    }
-                    // Read file
-                    std::string source = std::string(std::istreambuf_iterator<char>(shaderFile), (std::istreambuf_iterator<char>()));
-                    shaderFile.close();
-
-                    _quad->GetShaderProgram()->DeleteShader(_curShader);
-                    _curShader = _quad->GetShaderProgram()->CreateShader(source, GL_FRAGMENT_SHADER);
-                    _quad->GetShaderProgram()->AttachShader(_curShader);
-                    _quad->GetShaderProgram()->Link();
+                    _selectedShaderFileName = fileName;
+                    LoadShader(fileName);
                 }
-                if (!none_selected && is_selected)
+                if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
@@ -161,7 +185,7 @@ namespace Scape {
         ImGui::SeparatorText("Active uniforms");
         ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
-        for (const auto& [name, uniform] : _quad->GetShaderProgram()->GetActiveUniforms())
+        for (const auto& [name, uniform] : _shader->GetActiveUniforms())
         {
             std::shared_ptr<UniformUiData> data = _uniformData[name];
 
@@ -207,7 +231,7 @@ namespace Scape {
             bool edited = false;
             if (data->IsColor)
             {
-                float* bufferData = (_quad->GetShaderProgram()->GetUniformBuffer<float>(name));
+                float* bufferData = (_shader->GetUniformBuffer<float>(name));
                 edited = uniform->GetType() == GL_FLOAT_VEC3 ? ImGui::ColorEdit3(widgetID.c_str(), bufferData, 0) : ImGui::ColorEdit4(widgetID.c_str(), bufferData, 0);
             }
             else {
@@ -223,7 +247,7 @@ namespace Scape {
 
             ImGui::Separator();
 
-            if (edited) _quad->GetShaderProgram()->SendUniform(name);
+            if (edited) _shader->SendUniform(name);
         }
     }
 }

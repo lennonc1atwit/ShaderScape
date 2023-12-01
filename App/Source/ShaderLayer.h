@@ -26,10 +26,13 @@ namespace Scape {
 		void OnEvent() override;
 
         void OnShaderLink();
-
 	private:
         void ShowBuilder();
         void ShowUniforms();
+        void LoadShader(std::string fileName = "");
+        void UnLoadShader();
+        double GetLastWriteTime();
+        bool IsShaderLoaded() { return _selectedShaderFileName.compare("None") != 0; }
 
         class UniformUiData
         {
@@ -66,10 +69,14 @@ namespace Scape {
         std::map <std::string, std::shared_ptr<UniformUiData>> _uniformData;
 
         std::shared_ptr<Quad> _quad;
+        std::shared_ptr<Scape::Shader> _shader;
 
         std::string _selectedShaderFileName = "None";
+        std::string _selectedShaderFilePath = "";
 
         GLuint _curShader = 0;
+
+        double _lastSaveTime;
     };
 }
 

@@ -3,7 +3,7 @@
 #include <Logging.h>
 #include <set>
 
-GLuint SS::Shader::CreateShader(const std::string& shaderSource, GLenum shaderType)
+GLuint Scape::Shader::CreateShader(const std::string& shaderSource, GLenum shaderType)
 {
     // Open File
     static const std::string _openGlVersion = "#version 430 core\n";
@@ -34,7 +34,7 @@ GLuint SS::Shader::CreateShader(const std::string& shaderSource, GLenum shaderTy
     return shaderId;
 }
 
-void SS::Shader::Link()
+void Scape::Shader::Link()
 {
     // Make sure we have something to link
     GLsizei shaderCount;
@@ -73,7 +73,7 @@ void SS::Shader::Link()
 
 
 
-void SS::Shader::SendUniform(std::string uniformName)
+void Scape::Shader::SendUniform(std::string uniformName)
 {
     if (_activeUniforms.find(uniformName) == _activeUniforms.end())
         return;
@@ -107,7 +107,7 @@ void SS::Shader::SendUniform(std::string uniformName)
     }
 }
 
-void SS::Shader::RetreiveUniform(std::string uniformName)
+void Scape::Shader::RetreiveUniform(std::string uniformName)
 {
     if (_activeUniforms.find(uniformName) == _activeUniforms.end())
         return;
@@ -141,7 +141,7 @@ void SS::Shader::RetreiveUniform(std::string uniformName)
     }
 }
 
-void SS::Shader::SetUniformBuffer(std::string uniformName, const void* data)
+void Scape::Shader::SetUniformBuffer(std::string uniformName, const void* data)
 {
     if (_activeUniforms.find(uniformName) == _activeUniforms.end())
         return;
@@ -154,28 +154,28 @@ void SS::Shader::SetUniformBuffer(std::string uniformName, const void* data)
 
 
 
-GLenum SS::Shader::GetUniformType(std::string uniformName)
+GLenum Scape::Shader::GetUniformType(std::string uniformName)
 {
 	if (_activeUniforms.find(uniformName) != _activeUniforms.end())
 		return _activeUniforms[uniformName]->GetType();
 	return GL_INVALID_ENUM;
 }
 
-GLint SS::Shader::GetUniformLocation(std::string uniformName)
+GLint Scape::Shader::GetUniformLocation(std::string uniformName)
 {
 	if (_activeUniforms.find(uniformName) != _activeUniforms.end())
 		return _activeUniforms[uniformName]->GetLocation();
 	return -1;
 }
 
-size_t SS::Shader::GetUniformSize(std::string uniformName)
+size_t Scape::Shader::GetUniformSize(std::string uniformName)
 {
 	if (_activeUniforms.find(uniformName) != _activeUniforms.end())
 		return _activeUniforms[uniformName]->GetBufferSize();
 	return 0;
 }
 
-void SS::Shader::RetreiveActiveUniforms(bool preserveData)
+void Scape::Shader::RetreiveActiveUniforms(bool preserveData)
 {
     GLint count;
 

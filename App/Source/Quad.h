@@ -28,7 +28,7 @@ public:
 	
 	void OnShaderLink();
 
-	std::shared_ptr<SS::Shader> GetShaderProgram() { return _shaderProgram; }
+	std::shared_ptr<Scape::Shader> GetShaderProgram() { return _shaderProgram; }
 	GLuint GetTextureId() { return _fbo->GetTextureId(); }
 	glm::vec3 GetSize() { return _pixelSize; }
 
@@ -43,7 +43,7 @@ private:
 
 	}
 	glm::vec3 _pixelSize;
-	std::shared_ptr<SS::Shader> _shaderProgram;
+	std::shared_ptr<Scape::Shader> _shaderProgram;
 	GLuint _userShader;
 
 

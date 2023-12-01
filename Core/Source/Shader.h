@@ -7,7 +7,7 @@
 #include <functional>
 #include <memory>
 
-namespace SS
+namespace Scape
 {
 	class Shader
 	{
