@@ -2,7 +2,6 @@
 #include <GLBuffer.h>
 #include <Shader.h>
 #include <GLFW/glfw3.h>
-
 #include <memory>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -30,16 +29,16 @@ public:
 
 	std::shared_ptr<Scape::Shader> GetShaderProgram() { return _shaderProgram; }
 	GLuint GetTextureId() { return _fbo->GetTextureId(); }
-	glm::vec3 GetSize() { return _pixelSize; }
+	glm::vec3 GetSize() const { return _pixelSize; }
 
-	double GetLastFrameTime() { return _lastFrameTime; }
+	double GetLastFrameTime() const { return _lastFrameTime; }
 
 	bool WindowedRender = true;
 private:
 	void UpdateResolution()
 	{
 		_shaderProgram->SetUniformBuffer("iResolution", glm::value_ptr(_pixelSize));
-		_fbo->GenBuffers(1, _pixelSize.x, _pixelSize.y);
+		_fbo->GenBuffers(1, (GLuint)_pixelSize.x, (GLuint)_pixelSize.y);
 
 	}
 	glm::vec3 _pixelSize;

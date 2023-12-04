@@ -1,5 +1,6 @@
 #include <Window.h>
-#include <functional>
+
+
 
 static void glfwErrorCallback(int error, const char* description)
 {
@@ -16,15 +17,6 @@ static void GLAPIENTRY GLErrorCallback(GLenum source,
 {
     if (severity == GL_DEBUG_TYPE_ERROR)
         std::cout << "[OpenGL Error](" << type << ") " << message << std::endl;
-}
-
-static void handleKeyboardInput(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    // Use escape key for terminating the GLFW window
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    }
 }
 
 Window::Window(const char* title, int width, int height)
@@ -51,11 +43,51 @@ Window::Window(const char* title, int width, int height)
         exit(EXIT_FAILURE);
     }
 
-    glfwSetKeyCallback(_glfwWindowPtr, handleKeyboardInput);
-    glfwSetFramebufferSizeCallback(_glfwWindowPtr, OnResize);
-    
-    //glDebugMessageCallback(GLErrorCallback, 0);
+    glfwSetWindowCloseCallback(_glfwWindowPtr, [](GLFWwindow* window) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::WindowCloseEvent>());
+    });
 
+    glfwSetWindowIconifyCallback(_glfwWindowPtr, [](GLFWwindow* window, int iconified) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::WindowIconifyEvent>(iconified));
+    });
+
+    glfwSetWindowMaximizeCallback(_glfwWindowPtr, [](GLFWwindow* window, int maximized) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::WindowMaximizeEvent>(maximized));
+    });
+
+    glfwSetFramebufferSizeCallback(_glfwWindowPtr, [](GLFWwindow* window, int width, int height) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::FrameBufferResizeEvent>(width, height));
+    });
+
+    glfwSetKeyCallback(_glfwWindowPtr, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::KeyEvent>(key, scancode, action, mods));
+        printf("Key: %d %d %d %d\n", key, scancode, action, mods);
+
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, GL_TRUE);
+    });
+
+    glfwSetCursorPosCallback(_glfwWindowPtr, [](GLFWwindow* window, double xpos, double ypos) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::CursorEvent>(xpos, ypos));
+    });
+
+    glfwSetMouseButtonCallback(_glfwWindowPtr, [](GLFWwindow* window, int button, int action, int mods) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::MouseButtonEvent>(button, action, mods));
+    });
+
+    glfwSetScrollCallback(_glfwWindowPtr, [](GLFWwindow* window, double xoffset, double yoffset) {
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::ScrollEvent>(xoffset, yoffset));
+    });
+    
+    glfwSetDropCallback(_glfwWindowPtr, [](GLFWwindow * window, int count, const char** paths){
+        std::vector<std::string> pathsVec = std::vector<std::string>();
+        for (int i = 0; i < count; i++)
+            pathsVec.push_back(paths[i]);
+
+        Scape::EventDispatcher::Instance()->EnqueueEvent(std::make_shared<Scape::DropEvent>(pathsVec));
+    });
+  
+    //glDebugMessageCallback(GLErrorCallback, 0);
 
     // Create Context and Load OpenGL Functions
     glfwMakeContextCurrent(_glfwWindowPtr);

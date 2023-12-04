@@ -5,12 +5,14 @@ Shader files live in the `Shaders/` directory and currently only fragment shader
 
 ## Features
 - Load fragment shaders
+	- Drag and drop support
 - Uniforms editable via widgets, updated live
-- Profile shader performance
+- Profile shader preformance
 - Built in uniforms (more to come)
 
 ![Strings](Resources/strings.png)
 ![Bulb](Resources/bulb.png)
+![Profiler](Resources/ImprovedProfilerV1.png)
 
 ## Future
 - More builtin uniforms

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <Event.h>
 
 namespace Scape
 {
@@ -14,7 +15,7 @@ namespace Scape
 		virtual void OnUpdate(double time, double timeStep) {}
 		virtual void OnFixedUpdate(double fixedTimeStep) {}
 		virtual void OnImGuiRender() {}
-		virtual void OnEvent() {}
+		virtual void OnEvent(std::shared_ptr<Event> event) {}
 
 		const std::string& GetName() const { return m_DebugName; }
 	protected:

@@ -3,7 +3,10 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <Event.h>
 #include <iostream>
+#include <functional>
+#include <sstream>
 
 class Window 
 {
@@ -18,7 +21,7 @@ public:
     void EndFrame();
 
     GLFWwindow* GetRawWindow() { return _glfwWindowPtr; }
-    float GetWindowTime() { return glfwGetTime(); }
+    double GetWindowTime() { return glfwGetTime(); }
 
     inline static int Width = 0;
     inline static int Height = 0;

@@ -4,6 +4,8 @@
 #include <imgui.h>
 #include <implot.h>
 #include <numeric>
+#include <Event.h>
+#include <Profiler.h>
 namespace Scape {
 	class ProfilerLayer : public Layer
 	{
@@ -16,14 +18,13 @@ namespace Scape {
         void OnUpdate(double time, double timeStep)  override;
 		void OnFixedUpdate(double fixedTimeStep) override;
 		void OnImGuiRender() override;
-		void OnEvent() override;
+		void OnEvent(std::shared_ptr<Event> event) override;
 
 	private:
-        static const int CAPTURE_WINDOW_SIZE = 240;
-        int _nextOffset;
         
+        Profiler* _profiler;
+
         double _averageFrameTime;
-        double _curIndex;
 
         ImVec4 _avgColor;
         float _avgThickness;
@@ -33,9 +34,6 @@ namespace Scape {
         float _lineThickness;
 
         ImVec4 _fillColor;
-
-        double* _timeData;
-        double* _frameTimeData;
 
         inline static double yTickValues[7] = { 
             0, 

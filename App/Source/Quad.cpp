@@ -1,6 +1,7 @@
 #include "Quad.h"
 
 
+
 Quad::Quad(glm::vec2 size)
 {
     _pixelSize = glm::vec3(size, size.x / size.y);
@@ -78,7 +79,7 @@ void Quad::Render(bool toFbo = true)
         _shouldResize = false;
     }
 
-    double t1 = glfwGetTime();
+    
     if(toFbo) _fbo->Bind();
     _shaderProgram->Activate();
 
@@ -89,9 +90,7 @@ void Quad::Render(bool toFbo = true)
 
     _shaderProgram->Deactivate();
     if (toFbo) _fbo->UnBind();
-    double t2 = glfwGetTime();
-
-    _lastFrameTime = t2 - t1;
+    
 }
 
 bool Quad::SetShaderFile(std::string shaderPath)

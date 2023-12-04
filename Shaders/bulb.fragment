@@ -3,6 +3,7 @@
 
 uniform vec3 sunDir = vec3(0.1, 0.8, 0.6);
 uniform vec3 color1 = vec3(0.4, 1.6, 1.0);
+uniform float power = 8.0;
 
 // whether turn on the animation
 //#define phase_shift_on 
@@ -33,7 +34,6 @@ vec3 mb(vec3 p) {
 	p.xyz = p.xzy;
 	vec3 z = p;
 	vec3 dz=vec3(0.0);
-	float power = 8.0;
 	float r, theta, phi;
 	float dr = 1.0;
 	

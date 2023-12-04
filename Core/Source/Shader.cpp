@@ -7,7 +7,7 @@ GLuint Scape::Shader::CreateShader(const std::string& shaderSource, GLenum shade
 {
     // Open File
     static const std::string _openGlVersion = "#version 430 core\n";
-    static const std::string _builtInUniforms = "precision highp float;\nuniform float iTime;\nuniform vec3 iResolution;\n";
+    static const std::string _builtInUniforms = "precision highp float;\nuniform float iTime;\nuniform vec3 iResolution;\nuniform vec4 iMouse;\nuniform int iFrame;\nuniform float iTimeDelta;\n";
     std::string fullSource = _openGlVersion + _builtInUniforms + shaderSource;
     const char* rawSource = fullSource.c_str();
 
@@ -27,7 +27,7 @@ GLuint Scape::Shader::CreateShader(const std::string& shaderSource, GLenum shade
         glGetShaderInfoLog(shaderId, length, nullptr, buffer);
         fprintf(stderr, "%s\n", buffer);
         free(buffer);
-        return false;
+        return 0xFFFFFFFF;
     }
 
     return shaderId;

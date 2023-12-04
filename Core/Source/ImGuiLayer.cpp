@@ -42,7 +42,7 @@ namespace Scape {
 		ImGui::DestroyContext();
 	}
 
-	void ImGuiLayer::OnEvent()
+	void ImGuiLayer::OnEvent(std::shared_ptr<Event> event)
 	{
 	}
 
@@ -57,7 +57,7 @@ namespace Scape {
 	void ImGuiLayer::End()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2(Window::Width, Window::Height);
+		io.DisplaySize = ImVec2((float)Window::Width, (float)Window::Height);
 
 		// Rendering
 		ImGui::Render();

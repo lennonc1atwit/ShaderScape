@@ -9,6 +9,10 @@ void main()
         discard;
 
     vec2 uv = gl_FragCoord.xy/iResolution.xy * 2.0 - 1.0;
+    vec2 mv = iMouse.xy/iResolution.xy * 2.0 - 1.0;
+
+    uv-=mv;
+
     float aspect = iResolution.x / iResolution.y;
 
     if(iResolution.x > iResolution.y)

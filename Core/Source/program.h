@@ -2,7 +2,7 @@
 #include <Window.h>
 #include <ImGuiLayer.h>
 #include <cstdarg>
-
+#include <Event.h>
 #include <vector>
 
 class Application
@@ -12,7 +12,7 @@ public:
     ~Application();
 
     void Run();
-    void OnEvent();
+    void OnEvent(Scape::Event& event);
 
     static Application& Get() { return *_instance; }
 
@@ -23,6 +23,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<Scape::Layer>> _layers;
+    Scape::EventDispatcher* _eventDispatcher;
 
     std::shared_ptr<Window> _window;
     std::unique_ptr<Scape::ImGuiLayer> _imGuiLayer;

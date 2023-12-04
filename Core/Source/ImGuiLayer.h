@@ -18,7 +18,7 @@ namespace Scape
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnEvent() override;
+		virtual void OnEvent(std::shared_ptr<Event> event) override;
 
 		void Begin();
 		void End();
