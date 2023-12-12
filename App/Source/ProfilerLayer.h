@@ -21,38 +21,52 @@ namespace Scape {
 		void OnEvent(std::shared_ptr<Event> event) override;
 
 	private:
-        
-        Profiler* _profiler;
-
-        double _averageFrameTime;
-
-        ImVec4 _avgColor;
-        float _avgThickness;
-        bool _showMarker;
-
-        ImVec4 _lineColor;
-        float _lineThickness;
-
-        ImVec4 _fillColor;
-
-        inline static double yTickValues[7] = { 
-            0, 
-            1, 
-            4.166666,  
-            8.333333, 
-            16.66666, 
-            33.33333, 
-            66.66667 
+        struct LineData
+        {
+            ImVec4 Color;
+            float Thickness;
+            bool ShowAverage;
+            std::string ColorLabel;
+            std::string ThicknessLabel;
+            std::string AverageLabel;
         };
 
-        inline static const char* yTickLabels[7] = {
+        Profiler* _profiler;
+        std::map<std::string, std::shared_ptr<LineData>> _plotData;
+
+        ImColor GetNextColor() { return _lineColors[_plotData.size() % IM_ARRAYSIZE(_lineColors)]; }
+
+        inline static double _yTickValues[9] = { 
+            0, 
+            1, 
+            2,
+            4,  
+            8, 
+            16, 
+            32, 
+            64, 
+            128
+        };
+
+        inline static const char* _yTickLabels[9] = {
             " inffps   0ms",
             "1000fps   1ms",
-            " 240fps   4ms",
-            " 120fps   8ms",
-            "  60fps  17ms",
-            "  30fps  33ms",
-            "  15fps  67ms"
+            " 500fps   2ms",
+            " 250fps   4ms",
+            " 125fps   8ms",
+            "  62fps  16ms",
+            "  31fps  32ms",
+            "  15fps  64ms",
+            "   8fps 128ms"
+        };
+
+        inline static ImColor _lineColors[] = {
+            ImColor(255, 255, 255),
+            ImColor(255, 202, 58),
+            ImColor(138, 201, 38),
+            ImColor(25, 130, 196),
+            ImColor(106, 76, 147),
+            ImColor(255, 89, 94),
         };
 	};
 }

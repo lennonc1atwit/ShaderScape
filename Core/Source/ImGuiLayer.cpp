@@ -1,5 +1,6 @@
 #include "ImGuiLayer.h"
 
+
 namespace Scape {
 	void ImGuiLayer::OnAttach()
 	{
@@ -26,7 +27,11 @@ namespace Scape {
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
-			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			style.WindowMinSize.x = 300.f;
+			style.WindowMinSize.y = 170.f;
+
+			/*for (auto& [var, value] : _styleColorMap)
+				style.Colors[var] = value;*/
 		}
 
 		// Setup Platform/Renderer bindings
@@ -52,6 +57,7 @@ namespace Scape {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+		//ImGui::ShowMetricsWindow();
 	}
 
 	void ImGuiLayer::End()
@@ -62,7 +68,7 @@ namespace Scape {
 		// Rendering
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+		
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();

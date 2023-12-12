@@ -39,7 +39,7 @@ void Application::Run()
         Scape::Profiler::Get()->Begin("FixedUpdate");
         while (_accumulator >= _fixedDeltaTime)
         {
-            for (auto &layer : _layers)
+            for (auto layer : _layers)
                 layer->OnFixedUpdate(_fixedDeltaTime);
             _accumulator -= _fixedDeltaTime;
         }
@@ -52,17 +52,17 @@ void Application::Run()
         
             // Raw Drawing
             Scape::Profiler::Get()->Begin("Update");
-            for (auto &layer : _layers)
+            for (auto layer : _layers)
                 layer->OnUpdate(_currentTime, _deltaTime);
             Scape::Profiler::Get()->End("Update");
 
             // Gui
+            Scape::Profiler::Get()->Begin("UI");
             _imGuiLayer->Begin();
-                Scape::Profiler::Get()->Begin("UI");
-                for (auto &layer : _layers)
+                for (auto layer : _layers)
                     layer->OnImGuiRender();
-                Scape::Profiler::Get()->End("UI");
             _imGuiLayer->End();
+            Scape::Profiler::Get()->End("UI");
         
         // Finish Render
         Scape::Profiler::Get()->Begin("Render");
@@ -78,10 +78,8 @@ void Application::Run()
         {
             std::shared_ptr<Scape::Event> event = _eventDispatcher->DispatchNextEvent();
             
-            
-            for (auto &layer : _layers)
+            for (auto layer : _layers)
                 layer->OnEvent(event);
-            
         }
         Scape::Profiler::Get()->End("Event");
 

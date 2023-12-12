@@ -60,6 +60,13 @@ namespace Scape {
 		return _arrayData[name]->offset;
 	}
 
+	double Profiler::GetAverageFrameTime(std::string name)
+	{
+		if (_arrayData.find(name) == _arrayData.end())
+			return 0;
+		return _arrayData[name]->avg;
+	}
+
 	void Profiler::CalcAverages()
 	{
 		for (auto& [name, data] : _frameTimeData)

@@ -19,7 +19,12 @@ public:
     std::shared_ptr<Window> GetWindow() { return _window; }
 
     template<class T>
-    void InstanceLayer() { _layers.push_back(std::make_shared<T>()); }
+    void PushLayer(std::shared_ptr<T> layer) 
+    { 
+        std::shared_ptr<Scape::Layer> layerPtr = std::dynamic_pointer_cast<Scape::Layer>(layer);
+        if(layerPtr)
+            _layers.push_back(layer); 
+    }
 
 private:
     std::vector<std::shared_ptr<Scape::Layer>> _layers;

@@ -25,7 +25,7 @@ namespace Scape
 			DropFile
 		};
 
-		Event() {};
+		Event(): _eventType(None) {};
 		virtual ~Event() = default;
 		 Type GetType() { return _eventType; }
 

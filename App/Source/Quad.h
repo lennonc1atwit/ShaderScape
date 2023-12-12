@@ -9,45 +9,17 @@
 class Quad
 {
 public:
-	Quad(glm::vec2 size);
+	Quad(glm::vec2 size, std::shared_ptr<Scape::Shader> shader);
 	~Quad();
 
 	void Render(bool toFbo);
-
-	void SetResolution(float width, float height)
-	{
-		_pixelSize.x = width; _pixelSize.y = height; _pixelSize.z = width / height;
-		UpdateResolution();
-	}
-
-	void SetTime(float time) { _shaderProgram->SetUniformBuffer("iTime", &time); }
-
-	bool SetShaderFile(std::string shaderPath);
-	void RemoveShader();
+	void SetResolution(float width, float height);
 	
-	void OnShaderLink();
-
-	std::shared_ptr<Scape::Shader> GetShaderProgram() { return _shaderProgram; }
 	GLuint GetTextureId() { return _fbo->GetTextureId(); }
 	glm::vec3 GetSize() const { return _pixelSize; }
-
-	double GetLastFrameTime() const { return _lastFrameTime; }
-
-	bool WindowedRender = true;
 private:
-	void UpdateResolution()
-	{
-		_shaderProgram->SetUniformBuffer("iResolution", glm::value_ptr(_pixelSize));
-		_fbo->GenBuffers(1, (GLuint)_pixelSize.x, (GLuint)_pixelSize.y);
-
-	}
 	glm::vec3 _pixelSize;
 	std::shared_ptr<Scape::Shader> _shaderProgram;
-	GLuint _userShader;
-
-
-	double _lastFrameTime = 0.0;
-	bool _shouldResize = true;
 
 	std::unique_ptr<FrameBufferObject> _fbo;
 	std::unique_ptr<VertexArrayObject> _vao;

@@ -35,6 +35,9 @@ namespace Scape {
 		double* GetFrameData(std::string name);
 		double* GetTimeData(std::string name);
 		double GetDataOffset(std::string name);
+		double GetAverageFrameTime(std::string name);
+
+		static int GetFrame() { return _frame; }
 		void CalcAverages();
 		
 	protected:

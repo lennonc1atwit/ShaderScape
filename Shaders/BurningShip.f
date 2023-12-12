@@ -106,13 +106,14 @@ void main() {
     vec3 col = vec3(0);
 
     for(float i=0.; i < SAMPLES; i++) {
-        vec2 p = 0.5*(2.*gl_FragCoord.xy-iResolution.xy+nextRand2())/iResolution.y ;
+        vec2 p = 0.5*(2.*gl_FragCoord.xy-iResolution.xy+nextRand2());
+
+        p *= ZOOM/iResolution.y;
+        p += OFFSET;
         p.x /= iResolution.z;
         p.y = -p.y;
-		p *= ZOOM;
-		p += OFFSET;
-		
-		
+        
+
         float orbit = bship(p) / MAX_ITER;
     	col += cmap( orbit   , pal ); 
     }

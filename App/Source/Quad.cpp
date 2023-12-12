@@ -2,10 +2,8 @@
 
 
 
-Quad::Quad(glm::vec2 size)
+Quad::Quad(glm::vec2 size, std::shared_ptr<Scape::Shader> shader)
 {
-    _pixelSize = glm::vec3(size, size.x / size.y);
-
     std::vector<Vertex> _vertexData = {
         {
             glm::vec3(-1.0f, 1.0f, 0.0f),
@@ -34,14 +32,12 @@ Quad::Quad(glm::vec2 size)
         1, 2, 3
     };
 
-    _shaderProgram = std::make_shared<Scape::Shader>();
+    _shaderProgram = shader;
 
     _vao = std::make_unique<VertexArrayObject>();
     _vbo = std::make_unique<VertexBufferObject>();
     _ebo = std::make_unique<ElementBufferObject>();
     _fbo = std::make_unique<FrameBufferObject>();
-
-    UpdateResolution();
 
     _vao->GenBuffers(1);
     _vao->Bind();
@@ -58,8 +54,7 @@ Quad::Quad(glm::vec2 size)
     _vbo->Unbind();
     _ebo->Unbind();
 
-    std::function<void()> callback = std::bind(&Quad::OnShaderLink, this);
-    _shaderProgram->AddOnLink(callback);
+    SetResolution(size.x, size.y);
 }
 
 Quad::~Quad()
@@ -67,19 +62,8 @@ Quad::~Quad()
 
 }
 
-void Quad::OnShaderLink()
-{
-    UpdateResolution();
-}
-
 void Quad::Render(bool toFbo = true)
 {
-    if (_shouldResize) {
-        UpdateResolution();
-        _shouldResize = false;
-    }
-
-    
     if(toFbo) _fbo->Bind();
     _shaderProgram->Activate();
 
@@ -93,21 +77,8 @@ void Quad::Render(bool toFbo = true)
     
 }
 
-bool Quad::SetShaderFile(std::string shaderPath)
+void Quad::SetResolution(float width, float height)
 {
-    _userShader = _shaderProgram->CreateShader(shaderPath, GL_FRAGMENT_SHADER);
-
-    _shaderProgram->AttachShader(_userShader);
-    _shaderProgram->Link();
-
-    UpdateResolution();
-
-    return true;
-}
-
-void Quad::RemoveShader()
-{
-    _shaderProgram->DetachShader(_userShader);
-    _shaderProgram->DeleteShader(_userShader);
-    _shaderProgram->Link();
+    _pixelSize.x = width; _pixelSize.y = height; _pixelSize.z = width / height;
+    _fbo->GenBuffers(1, (GLuint)_pixelSize.x, (GLuint)_pixelSize.y);
 }
