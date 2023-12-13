@@ -35,18 +35,17 @@ void Scape::ShaderBuilderLayer::OnAttach()
     _availableFragmentShaders = std::vector<std::string>();
     _availableComputeShaders = std::vector<std::string>();
 
-    _attachedShaderFiles = std::map<GLenum, ShaderFileData*>();
+    _attachedShaderFiles = std::map<GLenum, std::shared_ptr<ShaderFileData>>();
 
-    _attachedShaderFiles[GL_FRAGMENT_SHADER] = new ShaderFileData{ 0xFFFFFFFF, "N/A", "None", 0.0 };
-    _attachedShaderFiles[GL_COMPUTE_SHADER] = new ShaderFileData{ 0xFFFFFFFF, "N/A", "None", 0.0 };
+    _attachedShaderFiles[GL_FRAGMENT_SHADER] = std::make_shared<ShaderFileData>(ShaderFileData{ 0xFFFFFFFF, 0, "N/A", "None", 0.0 });
+    // _attachedShaderFiles[GL_COMPUTE_SHADER] = std::make_shared<ShaderFileData>(0xFFFFFFFF, "N/A", "None", 0.0);
 
     BUILTIN_SOURCE = GetShaderSource(SHADER_DIR + BUILTIN_SHADER);
 }
 
 void Scape::ShaderBuilderLayer::OnDetach()
 {
-    delete _attachedShaderFiles[GL_FRAGMENT_SHADER];
-    delete _attachedShaderFiles[GL_COMPUTE_SHADER];
+
 }
 
 void Scape::ShaderBuilderLayer::OnUpdate(double time, double timeStep)
@@ -57,6 +56,7 @@ void Scape::ShaderBuilderLayer::OnUpdate(double time, double timeStep)
 void Scape::ShaderBuilderLayer::OnFixedUpdate(double fixedTimeStep)
 {
     RefreshFileCache();
+    CheckForFileUpdates(_attachedShaderFiles[GL_FRAGMENT_SHADER]);
 }
 
 void Scape::ShaderBuilderLayer::OnImGuiRender()
@@ -65,7 +65,8 @@ void Scape::ShaderBuilderLayer::OnImGuiRender()
 	{
         ImGui::SeparatorText("Select File(s).");
         ShowFileDropDown("Fragment Shader", _attachedShaderFiles[GL_FRAGMENT_SHADER]->FileName, _availableFragmentShaders, GL_FRAGMENT_SHADER);
-        ShowFileDropDown("Compute Shader",  _attachedShaderFiles[GL_COMPUTE_SHADER]->FileName,  _availableComputeShaders,  GL_COMPUTE_SHADER);
+        // ShowFileDropDown("Compute Shader",  _attachedShaderFiles[GL_COMPUTE_SHADER]->FileName,  _availableComputeShaders,  GL_COMPUTE_SHADER);
+        ShowFileErrorPopup();
 	}
 	ImGui::End();
 }
@@ -104,7 +105,7 @@ void Scape::ShaderBuilderLayer::ShowFileDropDown(std::string title, std::string&
         bool none_selected = (selectedItem.compare("None") == 0);
         if (ImGui::Selectable("None", none_selected) && !none_selected)
         {
-            ShaderFileData* data = _attachedShaderFiles[shaderType];
+            std::shared_ptr<ShaderFileData> data = _attachedShaderFiles[shaderType];
             _shaderProgram->DetachShader(data->ShaderId);
             _shaderProgram->Link();
             data->ShaderId = 0;
@@ -120,10 +121,7 @@ void Scape::ShaderBuilderLayer::ShowFileDropDown(std::string title, std::string&
             if (ImGui::Selectable(fileName.c_str(), is_selected))
             {
                 selectedItem = fileName;
-                if (LoadShaderFromFile(SHADER_DIR + fileName, shaderType))
-                    printf("loaded\n");
-                else
-                    printf("error\n");
+                TryLoadShaderFromFile(SHADER_DIR + fileName, shaderType);
             }
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
@@ -132,16 +130,21 @@ void Scape::ShaderBuilderLayer::ShowFileDropDown(std::string title, std::string&
     }
 }
 
-bool Scape::ShaderBuilderLayer::LoadShaderFromFile(const std::string& filePath, GLenum type)
+bool Scape::ShaderBuilderLayer::TryLoadShaderFromFile(const std::string& filePath, GLenum type)
 {
-    GLuint newShader = _shaderProgram->CreateShader(BUILTIN_SOURCE + GetShaderSource(filePath), type);
+    std::string source = BUILTIN_SOURCE + "\"" +filePath+ "\"\n" + GetShaderSource(filePath);
+    GLuint newShader = _shaderProgram->CreateShader(source.c_str(), type);
     
-    if (newShader == 0xFFFFFFFF) {
-        _errorMsg = "Error Compiling Shader.";
+    // Check if we have an error
+    std::string errorMsg = _shaderProgram->GetShaderLog(newShader);
+    if (errorMsg.compare("") != 0)
+    {
+        _errorMsg = errorMsg;
+        _showError = true;
         return false;
     }
 
-    ShaderFileData* data = _attachedShaderFiles[type];
+    std::shared_ptr<ShaderFileData> data = _attachedShaderFiles[type];
 
     _shaderProgram->DetachShader(data->ShaderId);
     data->ShaderId = newShader;
@@ -150,6 +153,7 @@ bool Scape::ShaderBuilderLayer::LoadShaderFromFile(const std::string& filePath, 
     _shaderProgram->DeleteShader(data->ShaderId); // Marks for cleanup later when not in use
 
     // Update data
+    data->ShaderType = type;
     data->FilePath = filePath;
     data->FileName = filePath.substr(filePath.find_last_of("/\\") + 1);
     data->FileTimeStamp = (double)std::filesystem::last_write_time(filePath).time_since_epoch().count();
@@ -157,8 +161,38 @@ bool Scape::ShaderBuilderLayer::LoadShaderFromFile(const std::string& filePath, 
     return true;
 }
 
+void Scape::ShaderBuilderLayer::CheckForFileUpdates(std::shared_ptr<ShaderFileData> data)
+{
+    struct stat sb; // Check that file exists
+    if (stat(data->FilePath.c_str(), &sb) != 0 || (sb.st_mode & S_IFDIR))
+        return;
+
+    double lastWrite = std::filesystem::last_write_time(data->FilePath).time_since_epoch().count();
+    if (lastWrite > data->FileTimeStamp)
+    {
+        TryLoadShaderFromFile(data->FilePath, data->ShaderType);
+        data->FileTimeStamp = lastWrite;
+    }
+}
+
 void Scape::ShaderBuilderLayer::RefreshFileCache()
 {
     _availableComputeShaders = FetchFilesWithExtensions(SHADER_DIR, COMPUTE_EXTENSIONS);
     _availableFragmentShaders = FetchFilesWithExtensions(SHADER_DIR, FRAGMENT_EXTENSIONS);
+}
+
+void Scape::ShaderBuilderLayer::ShowFileErrorPopup()
+{
+    if (_showError) {
+        ImGui::OpenPopup("FileErrorPopup");
+        _showError = false;
+    }
+
+    if (ImGui::BeginPopup("FileErrorPopup"))
+    {
+        ImGui::Text("An Error occured when compiling the shader!");
+        ImGui::Separator();
+        ImGui::Text(_errorMsg.c_str());
+        ImGui::EndPopup();
+    }
 }

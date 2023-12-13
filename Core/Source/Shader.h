@@ -19,13 +19,14 @@ namespace Scape
 		~Shader() { glDeleteProgram(_programId); }
 
 		GLuint GetProgramID() { return _programId; }
+		GLuint CreateShader(const char* shaderSource, GLenum shaderType);
 
-		GLuint CreateShader(const std::string& shaderSource, GLenum shaderType);
 		void AttachShader(GLuint shaderId) { glAttachShader(_programId, shaderId); }
 		void DetachShader(GLuint shaderId) { glDetachShader(_programId, shaderId); }
 		void DeleteShader(GLuint shaderId) { glDeleteShader(shaderId); }
 
 		void Link();
+		const std::string GetShaderLog(GLuint shaderId);
 		void AddOnLink(std::function<void()> callback) { _linkCallbacks.push_back(callback); }
 
 		void Activate() { glUseProgram(_programId); }

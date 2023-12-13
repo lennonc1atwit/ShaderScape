@@ -24,20 +24,23 @@ namespace Scape
 		void OnImGuiRender() override;
 		void OnEvent(std::shared_ptr<Event> event) override;
 	private:
-		void ShowFileDropDown(std::string title, std::string& selectedItem, std::vector<std::string> options, GLenum shaderType);
-		bool LoadShaderFromFile(const std::string& source, GLenum type);
-		void RefreshFileCache();
-
 		struct ShaderFileData
 		{
 			GLuint ShaderId;
+			GLenum ShaderType;
 			std::string FilePath;
 			std::string FileName;
 			double FileTimeStamp;
-		};
 
+		};
+		void ShowFileDropDown(std::string title, std::string& selectedItem, std::vector<std::string> options, GLenum shaderType);
+		bool TryLoadShaderFromFile(const std::string& source, GLenum type);
+		void CheckForFileUpdates(std::shared_ptr<ShaderFileData>);
+		void RefreshFileCache();
+		void ShowFileErrorPopup();
+		
 		std::shared_ptr<Shader> _shaderProgram;
-		std::map<GLenum, ShaderFileData*> _attachedShaderFiles;
+		std::map<GLenum, std::shared_ptr<ShaderFileData>> _attachedShaderFiles;
 
 		std::vector<std::string> _availableFragmentShaders;
 		std::vector<std::string> _availableComputeShaders;

@@ -1,10 +1,10 @@
-// Palette
 uniform int SAMPLES = 8;
 uniform int MAX_ITER = 80;
 uniform float THRESHOLD = 16;
 uniform float ZOOM = 1;
 uniform vec4 OFFSET = vec4(1,2,3,4);
-uniform mat2x3 TEST = mat2x3(vec3(1, 2, 3), vec3(4, 5, 6));
+uniform mat4x4 TEST = mat4x4(vec4(1,2,3,4), vec4(5,6,7,8), vec4(9,10,11,12), vec4(13,14,15,16));
+// uniform mat2x3 TEST = mat2x3(vec3(1, 2, 3), vec3(4, 5, 6));
 uniform int Color = 1;
 
 struct palette {
