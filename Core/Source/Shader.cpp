@@ -23,11 +23,13 @@ GLuint Scape::Shader::CreateShader(const std::string& shaderSource, GLenum shade
     {
         GLint length = 0;
         glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length);
-        char* buffer = (char*)malloc(sizeof(char) * length);
-        glGetShaderInfoLog(shaderId, length, nullptr, buffer);
-        fprintf(stderr, "%s\n", buffer);
-        free(buffer);
-        return 0xFFFFFFFF;
+        if (length > 0) {
+            char* buffer = (char*)malloc(sizeof(char) * length);
+            glGetShaderInfoLog(shaderId, length, nullptr, buffer);
+            Logger::LogMessageConsole(Logger::Severity::Fail, __FILE__, __LINE__, buffer);
+            free(buffer);
+            return 0xFFFFFFFF;
+        }
     }
 
     return shaderId;
@@ -46,17 +48,21 @@ void Scape::Shader::Link()
     glLinkProgram(_programId);
 
     // Display errors
-    GLint status, length;
+    GLint status = 0;
     glGetProgramiv(_programId, GL_LINK_STATUS, &status);
     if (!status)
     {
         // check if error
+        GLint length = 0;
         glGetProgramiv(_programId, GL_INFO_LOG_LENGTH, &length);
-        char* buffer = (char*)malloc(sizeof(char) * length);
-        glGetProgramInfoLog(_programId, length, nullptr, buffer);
-        fprintf(stderr, "%s\n", buffer);
-        free(buffer);
-        return;
+        if (length > 0) 
+        {
+            char* buffer = (char*)malloc(sizeof(char) * length);
+            glGetProgramInfoLog(_programId, length, nullptr, buffer);
+            Logger::LogMessageConsole(Logger::Severity::Fail, __FILE__, __LINE__, buffer);
+            free(buffer);
+            return;
+        }
     }
     
     for (auto callback : _linkCallbacks)
@@ -74,18 +80,18 @@ void Scape::Shader::SendUniform(GLuint location, GLenum type, void* buffer)
 {
     switch (type)
     {
-    case GL_FLOAT:              glProgramUniform1fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
-    case GL_FLOAT_VEC2:         glProgramUniform2fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
-    case GL_FLOAT_VEC3:         glProgramUniform3fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
-    case GL_FLOAT_VEC4:         glProgramUniform4fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
-    case GL_DOUBLE:             glProgramUniform1dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
-    case GL_DOUBLE_VEC2:        glProgramUniform2dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
-    case GL_DOUBLE_VEC3:        glProgramUniform3dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
-    case GL_DOUBLE_VEC4:        glProgramUniform4dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
-    case GL_INT:                glProgramUniform1iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
-    case GL_INT_VEC2:           glProgramUniform2iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
-    case GL_INT_VEC3:           glProgramUniform3iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
-    case GL_INT_VEC4:           glProgramUniform4iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
+    case GL_FLOAT:             glProgramUniform1fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
+    case GL_FLOAT_VEC2:        glProgramUniform2fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
+    case GL_FLOAT_VEC3:        glProgramUniform3fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
+    case GL_FLOAT_VEC4:        glProgramUniform4fv(_programId, location, 1, reinterpret_cast<float*>(buffer)); break;
+    case GL_DOUBLE:            glProgramUniform1dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
+    case GL_DOUBLE_VEC2:       glProgramUniform2dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
+    case GL_DOUBLE_VEC3:       glProgramUniform3dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
+    case GL_DOUBLE_VEC4:       glProgramUniform4dv(_programId, location, 1, reinterpret_cast<double*>(buffer)); break;
+    case GL_INT:               glProgramUniform1iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
+    case GL_INT_VEC2:          glProgramUniform2iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
+    case GL_INT_VEC3:          glProgramUniform3iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
+    case GL_INT_VEC4:          glProgramUniform4iv(_programId, location, 1, reinterpret_cast<int*>(buffer)); break;
     case GL_UNSIGNED_INT:      glProgramUniform1uiv(_programId, location, 1, reinterpret_cast<unsigned int*>(buffer)); break;
     case GL_UNSIGNED_INT_VEC2: glProgramUniform2uiv(_programId, location, 1, reinterpret_cast<unsigned int*>(buffer)); break;
     case GL_UNSIGNED_INT_VEC3: glProgramUniform3uiv(_programId, location, 1, reinterpret_cast<unsigned int*>(buffer)); break;

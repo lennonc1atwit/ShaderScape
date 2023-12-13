@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
     std::unique_ptr<Application> app = std::make_unique<Application>();
 
     std::shared_ptr<Scape::Shader> shaderProgram = std::make_shared<Scape::Shader>();
-
+    // Give shader to each layer that needs it
     app->PushLayer(std::make_shared<Scape::ShaderBuilderLayer>(shaderProgram));
     app->PushLayer(std::make_shared<Scape::ShaderDisplayLayer>(shaderProgram));
     app->PushLayer(std::make_shared<Scape::ShaderUniformLayer>(shaderProgram));

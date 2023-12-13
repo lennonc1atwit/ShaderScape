@@ -3,7 +3,8 @@ uniform int SAMPLES = 8;
 uniform int MAX_ITER = 80;
 uniform float THRESHOLD = 16;
 uniform float ZOOM = 1;
-uniform vec2 OFFSET = vec2(0,0);
+uniform vec4 OFFSET = vec4(1,2,3,4);
+uniform mat2x3 TEST = mat2x3(vec3(1, 2, 3), vec3(4, 5, 6));
 uniform int Color = 1;
 
 struct palette {
@@ -102,14 +103,22 @@ void main() {
     {
         pal = palette_blue();
     }
+    if(Color == 2)
+    {
+        pal = palette_calm_blue();
+    }
+    if(Color == 3)
+    {
+        pal = palette_green();
+    }
     
     vec3 col = vec3(0);
 
     for(float i=0.; i < SAMPLES; i++) {
         vec2 p = 0.5*(2.*gl_FragCoord.xy-iResolution.xy+nextRand2());
 
-        p *= ZOOM/iResolution.y;
-        p += OFFSET;
+        p *= TEST[0][0]/iResolution.y;
+        p += OFFSET.xy;
         p.x /= iResolution.z;
         p.y = -p.y;
         

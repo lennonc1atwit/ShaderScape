@@ -1,10 +1,11 @@
 #pragma once
-#include <Uniform.h>
 #include <map>
 #include <string>
 #include <set>
 #include <functional>
 #include <memory>
+
+#include <glad/gl.h>
 
 namespace Scape
 {
@@ -49,7 +50,6 @@ namespace Scape
 		// Disable copying and assignment
 		Shader(Shader const&) = delete;
 		Shader& operator =(Shader const&) = delete;
-
 		
 		std::vector<std::function<void()>> _linkCallbacks;
 

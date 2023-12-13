@@ -104,7 +104,10 @@ void Scape::ShaderBuilderLayer::ShowFileDropDown(std::string title, std::string&
         bool none_selected = (selectedItem.compare("None") == 0);
         if (ImGui::Selectable("None", none_selected) && !none_selected)
         {
-            printf("unload\n");
+            ShaderFileData* data = _attachedShaderFiles[shaderType];
+            _shaderProgram->DetachShader(data->ShaderId);
+            _shaderProgram->Link();
+            data->ShaderId = 0;
         }
 
         if (none_selected)

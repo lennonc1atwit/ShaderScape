@@ -17,7 +17,7 @@ void Scape::ShaderDisplayLayer::OnAttach()
 
 void Scape::ShaderDisplayLayer::OnUpdate(double time, double timeStep) 
 { 
-    _iTime += timeStep;
+    _iTime += (float)timeStep;
     _shaderProgram->SendUniform("iTime", GL_FLOAT, &_iTime);
 
     float iTimeDelta = (float)timeStep;

@@ -6,6 +6,7 @@
 #include <glad/gl.h>
 
 #include <map>
+#include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
 
@@ -57,10 +58,13 @@ namespace Scape
 
 			// Gui Vars
 			glm::vec2 Dim = glm::vec2(0,0);
+			size_t SliderStride = 0;
 			bool IsColor = false;
+			bool CouldBeColor = false;
 			bool LogScale = false;
 			ImGuiSliderFlags SliderFlags = 0;
 
+			const char* DisplayFormat = "";
 			std::string WidgetID = "";
 			std::string MinWidgetId = "";
 			std::string MaxWidgetId = "";

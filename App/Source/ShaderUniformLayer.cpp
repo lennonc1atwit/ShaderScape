@@ -16,12 +16,13 @@ void Scape::ShaderUniformLayer::OnImGuiRender()
 {
     if(ImGui::Begin("Settings") ) {
         ImGui::SeparatorText("Active uniforms");
-        float lineWidth = ImGui::GetContentRegionAvail().x;
+        ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign,  ImVec2{ 0.0f, 0.5f });
+        ImGui::PushStyleColor(ImGuiCol_Button,              ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,       ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,        ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0, 0.5));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+        bool edited = false;
+        float lineWidth = ImGui::GetContentRegionAvail().x;
         for (const auto& [name, data] : _uniformData)
         {
             std::shared_ptr<UniformUIData> data = _uniformData[name];
@@ -35,25 +36,23 @@ void Scape::ShaderUniformLayer::OnImGuiRender()
 
             ImGui::SetNextItemWidth(lineWidth);
 
-            bool edited = false;
+            
             if (data->IsColor)
             {
                 float* bufferData = reinterpret_cast<float*>(data->Buffer);
-                edited = data->Type == GL_FLOAT_VEC3 ? ImGui::ColorEdit3(data->WidgetID.c_str(), bufferData, 0) : ImGui::ColorEdit4(data->WidgetID.c_str(), bufferData, 0);
+                edited = data->Dim.x == 3 ? ImGui::ColorEdit3(data->WidgetID.c_str(), bufferData, 0) : ImGui::ColorEdit4(data->WidgetID.c_str(), bufferData, 0);
             }
             else {
                 char* bufferData = reinterpret_cast<char*>(data->Buffer);// char so we can iterate
-                size_t stride = data->BufferSize / (size_t)data->Dim.y;
-
                 for (int i = 0; i < data->Dim.x; i++) {
                     std::string sliderID = data->WidgetID + std::to_string(i);
-                    edited = ImGui::SliderScalarN(sliderID.c_str(), data->DataType, &bufferData[stride * i], (int)data->Dim.y, data->SliderMin, data->SliderMax, UNIFORM_FORMAT_MAP[data->Type], data->SliderFlags);
+                    edited |= ImGui::SliderScalarN(sliderID.c_str(), data->DataType, &bufferData[data->SliderStride * i], (int)data->Dim.y, data->SliderMin, data->SliderMax, data->DisplayFormat, data->SliderFlags);
                 }
             }
 
             ImGui::Separator();
-
             if (edited) _shaderProgram->SendUniform(data->Location, data->Type, data->Buffer);
+            edited = false; // Reset for next uniform
         }
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
@@ -73,27 +72,23 @@ void Scape::ShaderUniformLayer::ShowUniformConfig(const char* name, std::shared_
     {
         ImGui::Text(name);
         char* bufferData = reinterpret_cast<char*>(data->Buffer); // char so we can iterate
-        size_t stride = data->BufferSize / (size_t)data->Dim.y;
         bool edited = false;
         for (int i = 0; i < data->Dim.x; i++) {
             std::string sliderID = data->WidgetID + std::to_string(i);
-            edited = ImGui::InputScalarN(sliderID.c_str(), data->DataType, &bufferData[stride * i], (int)data->Dim.y, 0, 0, UNIFORM_FORMAT_MAP[data->Type], 0);
+            edited |= ImGui::InputScalarN(sliderID.c_str(), data->DataType, &bufferData[data->SliderStride * i], (int)data->Dim.y, 0, 0, data->DisplayFormat, 0);
         }
         if (edited) _shaderProgram->SendUniform(data->Location, data->Type, data->Buffer);
 
         ImGui::Separator();
-        bool couldBeColor = data->Type == GL_FLOAT_VEC3 || data->Type == GL_FLOAT_VEC4;
-        if (!data->IsColor || !couldBeColor)
+        if (!data->IsColor)
         {
-            ImGui::InputScalar(data->MinWidgetId.c_str(), data->DataType, data->SliderMin);
-            ImGui::InputScalar(data->MaxWidgetId.c_str(), data->DataType, data->SliderMax);
+            ImGui::InputScalar(data->MinWidgetId.c_str(), data->DataType, data->SliderMin, 0, 0, data->DisplayFormat, 0);
+            ImGui::InputScalar(data->MaxWidgetId.c_str(), data->DataType, data->SliderMax, 0, 0, data->DisplayFormat, 0);
         }
 
-        ImGui::Checkbox("Log Scale", &data->LogScale);
-        data->SliderFlags = data->LogScale ? ImGuiSliderFlags_Logarithmic : 0;
+        ImGui::CheckboxFlags("Use Log Scale", &data->SliderFlags, ImGuiSliderFlags_Logarithmic);
 
-        ImGui::SameLine();
-        if (couldBeColor)
+        if (data->CouldBeColor)
             ImGui::Checkbox(data->ColorWidgetId.c_str(), &data->IsColor);
 
         ImGui::EndPopup();
@@ -149,6 +144,7 @@ void Scape::ShaderUniformLayer::AddNewUniform(std::string name, Shader::UniformI
     data->DataType = UNIFORM_INFO_MAP[data->Type].DataType;
     data->Dim = UNIFORM_INFO_MAP[data->Type].Components;
 
+    data->DisplayFormat = UNIFORM_FORMAT_MAP[data->DataType];
     data->WidgetID = "##" + name;
     data->MinWidgetId = "Min" + data->WidgetID;
     data->MaxWidgetId = "Max" + data->WidgetID;
@@ -157,8 +153,10 @@ void Scape::ShaderUniformLayer::AddNewUniform(std::string name, Shader::UniformI
     data->SliderMin = calloc(1, sizeof(double));
     data->SliderMax = calloc(1, sizeof(double));
     data->SliderFlags = ImGuiSliderFlags_None;
+    data->SliderStride = data->BufferSize / (size_t)data->Dim.x;
 
     data->IsColor = false;
+    data->CouldBeColor = data->Type == GL_FLOAT_VEC3 || data->Type == GL_FLOAT_VEC4;
     data->LogScale = false;
     
     switch (data->DataType)
