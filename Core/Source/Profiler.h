@@ -23,7 +23,7 @@ namespace Scape {
 			return _instance;
 		}
 
-		inline static int CAPTURE_WINDOW = 240;
+		inline const static int CAPTURE_WINDOW = 240;
 
 		void Update();
 		void Begin(std::string name);

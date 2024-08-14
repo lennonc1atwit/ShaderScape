@@ -26,7 +26,7 @@ namespace Scape
 		void DeleteShader(GLuint shaderId) { glDeleteShader(shaderId); }
 
 		void Link();
-		const std::string GetShaderLog(GLuint shaderId);
+		const std::string GetShaderError(GLuint shaderId);
 		void AddOnLink(std::function<void()> callback) { _linkCallbacks.push_back(callback); }
 
 		void Activate() { glUseProgram(_programId); }

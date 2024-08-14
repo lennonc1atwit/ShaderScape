@@ -36,6 +36,8 @@ namespace Scape {
 
         ImColor GetNextColor() { return _lineColors[_plotData.size() % IM_ARRAYSIZE(_lineColors)]; }
 
+        inline static double _timeIndicies[Profiler::CAPTURE_WINDOW];
+
         inline static double _yTickValues[9] = { 
             0, 
             1, 

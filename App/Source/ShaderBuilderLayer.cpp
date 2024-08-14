@@ -43,16 +43,6 @@ void Scape::ShaderBuilderLayer::OnAttach()
     BUILTIN_SOURCE = GetShaderSource(SHADER_DIR + BUILTIN_SHADER);
 }
 
-void Scape::ShaderBuilderLayer::OnDetach()
-{
-
-}
-
-void Scape::ShaderBuilderLayer::OnUpdate(double time, double timeStep)
-{
-
-}
-
 void Scape::ShaderBuilderLayer::OnFixedUpdate(double fixedTimeStep)
 {
     RefreshFileCache();
@@ -69,11 +59,6 @@ void Scape::ShaderBuilderLayer::OnImGuiRender()
         ShowFileErrorPopup();
 	}
 	ImGui::End();
-}
-
-void Scape::ShaderBuilderLayer::OnEvent(std::shared_ptr<Event> event)
-{
-
 }
 
 std::vector<std::string> FetchFilesWithExtensions(std::string dir, std::set<std::string> extensions)
@@ -136,7 +121,7 @@ bool Scape::ShaderBuilderLayer::TryLoadShaderFromFile(const std::string& filePat
     GLuint newShader = _shaderProgram->CreateShader(source.c_str(), type);
     
     // Check if we have an error
-    std::string errorMsg = _shaderProgram->GetShaderLog(newShader);
+    std::string errorMsg = _shaderProgram->GetShaderError(newShader);
     if (errorMsg.compare("") != 0)
     {
         _errorMsg = errorMsg;

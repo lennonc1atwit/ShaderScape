@@ -5,6 +5,11 @@ namespace Scape {
 	void ProfilerLayer::OnAttach()
 	{
         _profiler = Profiler::Get();
+
+        for (int i = 0; i < Profiler::CAPTURE_WINDOW; i++)
+        {
+            _timeIndicies[i] = i;
+        }
 	}
 
 	void ProfilerLayer::OnDetach() { }
@@ -26,7 +31,7 @@ namespace Scape {
                 ImPlot::SetupAxisTicks(ImAxis_Y1, _yTickValues, 9, _yTickLabels, false);
                 ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, 0, 200);
                 ImPlot::SetupAxisZoomConstraints(ImAxis_Y1, 1, 200);
-                ImPlot::SetupAxisLimits(ImAxis_X1, _profiler->GetFrame() - Profiler::CAPTURE_WINDOW, _profiler->GetFrame(), ImPlotCond_Always);
+                //ImPlot::SetupAxisLimits(ImAxis_X1, _profiler->GetFrame() - Profiler::CAPTURE_WINDOW, _profiler->GetFrame(), ImPlotCond_Always);
                 ImPlot::SetupLegend(ImPlotLocation_NorthWest, ImPlotLegendFlags_Horizontal);
 
                 for(auto section : _profiler->GetTimings()) { 
@@ -35,7 +40,7 @@ namespace Scape {
                     std::shared_ptr<LineData> plotData = _plotData[section];        
 
                     ImPlot::SetNextLineStyle(plotData->Color, plotData->Thickness);
-                    ImPlot::PlotLine(section.c_str(), _profiler->GetTimeData(section), _profiler->GetFrameData(section), Profiler::CAPTURE_WINDOW, ImPlotLineFlags_None, _profiler->GetDataOffset(section));
+                    ImPlot::PlotLine(section.c_str(), _timeIndicies, _profiler->GetFrameData(section), Profiler::CAPTURE_WINDOW, ImPlotLineFlags_None, 0);
 
                     if (plotData->ShowAverage) {
                         double avg = _profiler->GetAverageFrameTime(section);

@@ -47,7 +47,7 @@ void Scape::Shader::Link()
         callback();
 }
 
-const std::string Scape::Shader::GetShaderLog(GLuint shaderId)
+const std::string Scape::Shader::GetShaderError(GLuint shaderId)
 {
     // Display errors
     GLint _status = 0;

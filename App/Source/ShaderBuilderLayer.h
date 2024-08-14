@@ -18,11 +18,11 @@ namespace Scape
 		~ShaderBuilderLayer() { OnDetach(); }
 
 		void OnAttach() override;
-		void OnDetach() override;
-		void OnUpdate(double time, double timeStep)  override;
+		void OnDetach() override {}
+		void OnUpdate(double time, double timeStep)  override {}
 		void OnFixedUpdate(double fixedTimeStep) override;
 		void OnImGuiRender() override;
-		void OnEvent(std::shared_ptr<Event> event) override;
+		void OnEvent(std::shared_ptr<Event> event) override {}
 	private:
 		struct ShaderFileData
 		{

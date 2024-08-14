@@ -116,8 +116,8 @@ namespace Scape
 
 		inline static std::map<ImGuiDataType, const char*> UNIFORM_FORMAT_MAP =
 		{
-			{DataType::Float,   "%.10f"},
-			{DataType::Double,  "%.10f"},
+			{DataType::Float,   "%.6f"},
+			{DataType::Double,  "%.6f"},
 			{DataType::Signed32,   "%d"},
 			{DataType::UnSigned32, "%u"}
 		};
